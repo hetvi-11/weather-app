@@ -14,20 +14,17 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import WeatherIcon from "../components/WeatherIcon";
 
 function CityDetailPage() {
   const { cityName } = useParams();
   const dispatch = useDispatch();
   const unit = useSelector((state) => state.settings.unit);
-  const [uv, setUv] = useState(null);
   const unitSymbol = unit === "metric" ? "°C" : "°F";
+  const [uv, setUv] = useState(null);
 
-  const current = useSelector(
-    (state) => state.weather.data[cityName]
-  );
-  const forecast = useSelector(
-    (state) => state.weather.forecast[cityName]
-  );
+  const current = useSelector((state) => state.weather.data[cityName]);
+  const forecast = useSelector((state) => state.weather.forecast[cityName]);
 
   useEffect(() => {
     dispatch(getForecast({ city: cityName, unit }));
@@ -35,25 +32,22 @@ function CityDetailPage() {
 
   useEffect(() => {
     if (current) {
-      fetchUVIndex(current.coord.lat, current.coord.lon)
-        .then((data) => setUv(data.value));
+      fetchUVIndex(current.coord.lat, current.coord.lon).then((data) =>
+        setUv(data.value),
+      );
     }
   }, [current]);
 
   if (!current || !forecast) {
-    return <p style={{ padding: "20px" }}>Loading forecast...</p>;
+    return <p className="app-container">Loading forecast...</p>;
   }
-
-  /* ------------------ DATA PREPARATION ------------------ */
 
   const hourlyData = forecast.list.slice(0, 8).map((item) => ({
     time: new Date(item.dt * 1000).getHours() + ":00",
     temp: Math.round(item.main.temp),
     wind: item.wind.speed,
     precipitation:
-      (item.rain && item.rain["3h"]) ||
-      (item.snow && item.snow["3h"]) ||
-      0,
+      (item.rain && item.rain["3h"]) || (item.snow && item.snow["3h"]) || 0,
   }));
 
   const dailyData = Object.values(
@@ -66,47 +60,69 @@ function CityDetailPage() {
         };
       }
       return days;
-    }, {})
+    }, {}),
   ).slice(0, 5);
 
-  /* ------------------ UI ------------------ */
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>{current.name}</h1>
-      <h2>{Math.round(current.main.temp)}{unitSymbol}</h2>
+    <div className="app-container">
+      <div className="detail-header">
+        <h1>{current.name}</h1>
+        <div className="detail-temp">
+          {Math.round(current.main.temp)}
+          {unitSymbol}
+        </div>
+        <WeatherIcon icon={current.weather[0].icon} size={80} />
+      </div>
 
-      {/* -------- Detailed Stats -------- */}
-      <h3>Detailed Stats</h3>
-      <p>Feels Like: {Math.round(current.main.feels_like)}°</p>
-      <p>Pressure: {current.main.pressure} hPa</p>
-      <p>Humidity: {current.main.humidity}%</p>
-      <p>
-        Dew Point:{" "}
-        {Math.round(
-          current.main.temp - (100 - current.main.humidity) / 5
-        )}
-        °
-      </p>
-      <p>Wind Speed: {current.wind.speed} m/s</p>
-      <p>UV Index: {uv ?? "Loading..."}</p>
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-label">Feels Like</div>
+          <div className="stat-value">
+            {Math.round(current.main.feels_like)}
+            {unitSymbol}
+          </div>
+        </div>
 
-      {/* -------- Hourly Forecast Cards -------- */}
-      <h3>Hourly Forecast (Next 24h)</h3>
-      <div style={{ display: "flex", gap: "12px", overflowX: "auto" }}>
+        <div className="stat-card">
+          <div className="stat-label">Humidity</div>
+          <div className="stat-value">{current.main.humidity}%</div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-label">Pressure</div>
+          <div className="stat-value">{current.main.pressure} hPa</div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-label">Wind Speed</div>
+          <div className="stat-value">{current.wind.speed} m/s</div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-label">UV Index</div>
+          <div className="stat-value">{uv ?? "Loading"}</div>
+        </div>
+      </div>
+
+      <h3>Hourly Forecast</h3>
+      <div className="hourly-scroll">
         {forecast.list.slice(0, 8).map((item) => (
-          <div key={item.dt} style={hourStyle}>
-            <p>{new Date(item.dt * 1000).getHours()}:00</p>
-            <p>{Math.round(item.main.temp)}°</p>
-            <p>{item.weather[0].main}</p>
+          <div key={item.dt} className="hour-card">
+            <div>{new Date(item.dt * 1000).getHours()}:00</div>
+            <WeatherIcon icon={item.weather[0].icon} size={40} />
+            <strong>
+              {Math.round(item.main.temp)}
+              {unitSymbol}
+            </strong>
+            <div>{item.weather[0].main}</div>
           </div>
         ))}
       </div>
 
-      {/* -------- Hourly Temperature Chart -------- */}
       <h3>Hourly Temperature Trend</h3>
-      <div style={chartContainer}>
-        <ResponsiveContainer>
+      <div className="chart-box">
+        <ResponsiveContainer height={300}>
           <LineChart data={hourlyData}>
             <CartesianGrid />
             <XAxis dataKey="time" />
@@ -117,10 +133,9 @@ function CityDetailPage() {
         </ResponsiveContainer>
       </div>
 
-      {/* -------- Wind Speed Chart -------- */}
       <h3>Hourly Wind Speed</h3>
-      <div style={chartContainer}>
-        <ResponsiveContainer>
+      <div className="chart-box">
+        <ResponsiveContainer height={300}>
           <LineChart data={hourlyData}>
             <CartesianGrid />
             <XAxis dataKey="time" />
@@ -131,10 +146,9 @@ function CityDetailPage() {
         </ResponsiveContainer>
       </div>
 
-      {/* -------- Precipitation Chart -------- */}
       <h3>Hourly Precipitation</h3>
-      <div style={chartContainer}>
-        <ResponsiveContainer>
+      <div className="chart-box">
+        <ResponsiveContainer height={300}>
           <BarChart data={hourlyData}>
             <CartesianGrid />
             <XAxis dataKey="time" />
@@ -145,21 +159,22 @@ function CityDetailPage() {
         </ResponsiveContainer>
       </div>
 
-      {/* -------- 5-Day Forecast -------- */}
       <h3>5-Day Forecast</h3>
-      <div style={{ display: "flex", gap: "16px" }}>
+      <div className="hourly-scroll">
         {dailyData.map((item) => (
-          <div key={item.date} style={dayStyle}>
-            <p>{item.date}</p>
-            <p>{item.temp}°</p>
+          <div key={item.date} className="hour-card">
+            <div>{item.date}</div>
+            <strong>
+              {item.temp}
+              {unitSymbol}
+            </strong>
           </div>
         ))}
       </div>
 
-      {/* -------- 5-Day Temperature Chart -------- */}
       <h3>5-Day Temperature Trend</h3>
-      <div style={chartContainer}>
-        <ResponsiveContainer>
+      <div className="chart-box">
+        <ResponsiveContainer height={300}>
           <LineChart data={dailyData}>
             <CartesianGrid />
             <XAxis dataKey="date" />
@@ -172,27 +187,5 @@ function CityDetailPage() {
     </div>
   );
 }
-
-/* ------------------ STYLES ------------------ */
-
-const hourStyle = {
-  border: "1px solid #ddd",
-  padding: "8px",
-  minWidth: "80px",
-  textAlign: "center",
-};
-
-const dayStyle = {
-  border: "1px solid #ddd",
-  padding: "12px",
-  minWidth: "140px",
-  textAlign: "center",
-};
-
-const chartContainer = {
-  width: "100%",
-  height: "320px",
-  marginBottom: "40px",
-};
 
 export default CityDetailPage;

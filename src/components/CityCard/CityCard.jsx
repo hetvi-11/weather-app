@@ -5,6 +5,7 @@ import {
 } from "../../features/favorites/favoritesSlice";
 import { useNavigate } from "react-router-dom";
 import { removeCity } from "../../features/weather/weatherSlice";
+import WeatherIcon from "../WeatherIcon";
 
 function CityCard({ city, data }) {
   const dispatch = useDispatch();
@@ -15,8 +16,8 @@ function CityCard({ city, data }) {
 
   if (!data) {
     return (
-      <div style={cardStyle}>
-        <h3>{city}</h3>
+      <div className="city-card">
+        <h3 className="city-name">{city}</h3>
         <p>Loading...</p>
       </div>
     );
@@ -34,37 +35,43 @@ function CityCard({ city, data }) {
   const removeCityCard = (e) => {
     e.stopPropagation();
     dispatch(removeCity(city));
-    dispatch(removeFavorite(city)); // cleanup
+    dispatch(removeFavorite(city)); 
   };
 
   return (
-    <div
-      style={cardStyle}
-      onClick={() => navigate(`/city/${city}`)}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <h3>{data.name}</h3>
-        <button onClick={toggleFavorite}>
+    <div className="city-card" onClick={() => navigate(`/city/${city}`)}>
+     
+      <div className="city-card-header">
+        <span className="city-name">{data.name}</span>
+
+        <button
+          className="favorite-btn"
+          onClick={toggleFavorite}
+          aria-label="Toggle favorite"
+        >
           {isFavorite ? "★" : "☆"}
         </button>
       </div>
+      <WeatherIcon icon={data.weather[0].icon} size={56} />
 
-      <h2>{Math.round(data.main.temp)}°</h2>
-      <p>{data.weather[0].main}</p>
-      <p>Humidity: {data.main.humidity}%</p>
-      <p>Wind: {data.wind.speed} m/s</p>
 
-      <button onClick={removeCityCard}>Remove</button>
+      <div className="city-temp">{Math.round(data.main.temp)}°</div>
+
+      <div className="city-meta">{data.weather[0].main}</div>
+      <div className="city-meta">Humidity {data.main.humidity}%</div>
+      <div className="city-meta">Wind {data.wind.speed} m/s</div>
+
+      <button
+        onClick={removeCityCard}
+        style={{
+          marginTop: "12px",
+          background: "#864b1b",
+        }}
+      >
+        Remove
+      </button>
     </div>
   );
 }
-
-const cardStyle = {
-  border: "1px solid #ddd",
-  borderRadius: "8px",
-  padding: "16px",
-  width: "220px",
-  cursor: "pointer",
-};
 
 export default CityCard;

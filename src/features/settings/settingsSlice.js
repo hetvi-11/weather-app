@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  unit: "metric", // 'metric' = Celsius, 'imperial' = Fahrenheit
+  unit: "metric",
 };
 
 const settingsSlice = createSlice({

@@ -22,13 +22,13 @@ const weatherSlice = createSlice({
   name: "weather",
   initialState: {
   data: {},
-  forecast: {}, // ✅ NEW
+  forecast: {},
   status: "idle",
   error: null,
 },
 
   reducers: {
-    // ✅ NEW: remove city from dashboard
+  
     removeCity(state, action) {
       delete state.data[action.payload];
     },
@@ -52,7 +52,6 @@ const weatherSlice = createSlice({
   },
 });
 
-// ✅ export the new action
 export const { removeCity } = weatherSlice.actions;
 
 export default weatherSlice.reducer;

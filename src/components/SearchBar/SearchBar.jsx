@@ -14,7 +14,7 @@ function SearchBar() {
   };
 
   return (
-    <div style={{ marginBottom: "20px" }}>
+    <div className="search-bar">
       <input
         type="text"
         placeholder="Search city..."
