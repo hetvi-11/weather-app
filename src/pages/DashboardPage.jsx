@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CityCard from "../components/CityCard/CityCard";
-import SearchBar from "../components/SearchBar/searchBar";
 import { getCurrentWeather } from "../features/weather/weatherSlice";
 import { toggleUnit } from "../features/settings/settingsSlice";
+import SearchBar from "../components/SearchBar/SearchBar";
 
 const DEFAULT_CITIES = ["London", "New York", "Tokyo"];
 
@@ -48,8 +48,8 @@ function DashboardPage() {
         Switch to {unit === "metric" ? "°F" : "°C"}
       </button>
 
-
       <SearchBar />
+      
 
       <div className="card-grid">
         {sortedCities.map((city) => (
